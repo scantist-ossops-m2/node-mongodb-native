@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 import * as crypto from 'crypto';
 
 type AES256Callback = (key: Buffer, iv: Buffer, input: Buffer, output: Buffer) => number | Error;

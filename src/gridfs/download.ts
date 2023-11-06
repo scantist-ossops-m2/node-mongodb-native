@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 import { Readable } from 'stream';
 
 import type { Document, ObjectId } from '../bson';

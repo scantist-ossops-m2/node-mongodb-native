@@ -1,3 +1,4 @@
+import * as process from 'process';
 import { clearTimeout, setTimeout } from 'timers';
 import { promisify } from 'util';
 
@@ -312,7 +313,7 @@ export class Connection extends TypedEventEmitter<ConnectionEvents> {
   }
 
   onClose() {
-    const message = `connection ${this.id} to ${this.address} closed`;
+    const message = `connection ${this.id} to ${this.address} closed just because`;
     this.cleanup(true, new MongoNetworkError(message));
   }
 
@@ -428,7 +429,7 @@ export class Connection extends TypedEventEmitter<ConnectionEvents> {
     // cleanup.
     this.removeAllListeners(Connection.PINNED);
     this.removeAllListeners(Connection.UNPINNED);
-    const message = `connection ${this.id} to ${this.address} closed`;
+    const message = `connection ${this.id} to ${this.address} destroyed`;
     this.cleanup(options.force, new MongoNetworkError(message));
   }
 

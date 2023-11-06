@@ -1,4 +1,5 @@
 import type { BSONType, ObjectIdLike } from 'bson';
+import { type Buffer } from 'buffer';
 import { EventEmitter } from 'events';
 
 import type {

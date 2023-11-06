@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 import { Duplex, type DuplexOptions } from 'stream';
 
 import type { BSONSerializeOptions, Document } from '../bson';
@@ -87,7 +88,7 @@ export class MessageStream extends Duplex {
     const agreedCompressor = operationDescription.agreedCompressor ?? 'none';
     if (agreedCompressor === 'none' || !canCompress(command)) {
       const data = command.toBin();
-      this.push(Array.isArray(data) ? Buffer.concat(data) : data);
+      this.push(Array.isArray(data) ? concat(data) : data);
       return;
     }
     // otherwise, compress the message
@@ -126,6 +127,20 @@ export class MessageStream extends Duplex {
       }
     );
   }
+}
+
+function concat(list: Buffer[] | Uint8Array[]) {
+  const totalLength = (list as any[]).reduce<number>((acc, buf) => {
+    acc += buf.byteLength;
+    return acc;
+  }, 0);
+  const result = Buffer.alloc(totalLength);
+  let offset = 0;
+  for (const buffer of list) {
+    result.set(buffer, offset);
+    offset += buffer.byteLength;
+  }
+  return result;
 }
 
 // Return whether a command contains an uncompressible command term

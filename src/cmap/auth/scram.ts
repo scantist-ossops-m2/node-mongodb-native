@@ -1,4 +1,5 @@
 import { saslprep } from '@mongodb-js/saslprep';
+import { Buffer } from 'buffer';
 import * as crypto from 'crypto';
 import { promisify } from 'util';
 

@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import { Binary } from '../../bson';
 import { MongoMissingCredentialsError } from '../../error';
 import { ns } from '../../utils';

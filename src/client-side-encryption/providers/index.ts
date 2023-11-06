@@ -1,3 +1,5 @@
+import { type Buffer } from 'buffer';
+
 import { loadAWSCredentials } from './aws';
 import { loadAzureCredentials } from './azure';
 import { loadGCPCredentials } from './gcp';

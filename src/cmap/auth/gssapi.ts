@@ -1,4 +1,5 @@
 import * as dns from 'dns';
+import * as process from 'process';
 
 import { getKerberos, type Kerberos, type KerberosClient } from '../../deps';
 import { MongoInvalidArgumentError, MongoMissingCredentialsError } from '../../error';

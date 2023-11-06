@@ -1,0 +1,18 @@
+name = "cf_example"
+main = "src/worker.ts"
+compatibility_date = "2023-10-13"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+MONGODB_URI = "mongodb://bob:pwd123@localhost:27017,localhost:27018,localhost:27019/?authSource=admin&replicaSet=repl0"
+
+# mtls_certificates = [
+#   { binding = "MDB_CERT", certificate_id = "9f87c572-d6fd-4290-9cec-37cc1ba5cdda" }
+# ]
+
+# [[connect]]
+# binding = "MDB_CERT"
+# key_id = "9f87c572-d6fd-4290-9cec-37cc1ba5cdda"
+# cert_id = "9f87c572-d6fd-4290-9cec-37cc1ba5cdda"
+# host = "ac-l3q7lru-shard-00-01.knnds3w.mongodb.net"
+# port = "27017"

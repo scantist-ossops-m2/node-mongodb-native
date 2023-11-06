@@ -1,3 +1,4 @@
+import { type Buffer } from 'buffer';
 import * as crypto from 'crypto';
 import * as process from 'process';
 import { promisify } from 'util';

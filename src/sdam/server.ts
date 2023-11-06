@@ -1,3 +1,4 @@
+import * as process from 'process';
 import { promisify } from 'util';
 
 import type { Document } from '../bson';

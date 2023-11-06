@@ -1,5 +1,6 @@
 import type { Socket, SocketConnectOpts } from 'net';
 import * as net from 'net';
+import * as process from 'process';
 import type { ConnectionOptions as TLSConnectionOpts, TLSSocket } from 'tls';
 import * as tls from 'tls';
 

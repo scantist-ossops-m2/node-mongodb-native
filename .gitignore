@@ -40,6 +40,8 @@ manual_tests/
 docs/build
 docs/Makefile
 
+dist
+
 # xunit test output for CI
 xunit.xml
 
@@ -75,6 +77,7 @@ serverless.env
 
 expansion.yml
 mo-expansion.yml
+mo-expansion.sh
 lb-expansion.yml
 lb.env
 
@@ -92,6 +95,9 @@ etc/docs/build
 node_index.tab
 node-artifacts
 .npmrc
+
+devtools-shared/
+tls_files/
 
 # AWS SAM generated
 test/lambda/.aws-sam

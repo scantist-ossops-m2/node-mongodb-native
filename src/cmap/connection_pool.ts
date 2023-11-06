@@ -1,3 +1,4 @@
+import * as process from 'process';
 import { clearTimeout, setTimeout } from 'timers';
 
 import type { ObjectId } from '../bson';

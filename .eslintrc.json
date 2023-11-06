@@ -65,6 +65,14 @@
       {
         "name": "setInterval",
         "message": "Use `import { setInterval } from 'timers';` instead"
+      },
+      {
+        "name": "Buffer",
+        "message": "Use ByteUtils"
+      },
+      {
+        "name": "process",
+        "message": "Use `import * as process from 'process';` instead"
       }
     ],
     "prettier/prettier": "error",

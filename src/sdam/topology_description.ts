@@ -1,7 +1,7 @@
 import type { ObjectId } from '../bson';
 import * as WIRE_CONSTANTS from '../cmap/wire_protocol/constants';
 import { MongoRuntimeError, type MongoServerError } from '../error';
-import { compareObjectId, shuffle } from '../utils';
+import { compareObjectId, shuffle, StringMap } from '../utils';
 import { ServerType, TopologyType } from './common';
 import { ServerDescription } from './server_description';
 import type { SrvPollingEvent } from './srv_polling';
@@ -59,7 +59,7 @@ export class TopologyDescription {
     options = options ?? {};
 
     this.type = topologyType ?? TopologyType.Unknown;
-    this.servers = serverDescriptions ?? new Map();
+    this.servers = serverDescriptions ?? new StringMap();
     this.stale = false;
     this.compatible = true;
     this.heartbeatFrequencyMS = options.heartbeatFrequencyMS ?? 0;
@@ -147,7 +147,7 @@ export class TopologyDescription {
       return this;
     }
 
-    const serverDescriptions = new Map(this.servers);
+    const serverDescriptions = new StringMap(this.servers);
     for (const removedHost of hostnamesToRemove) {
       serverDescriptions.delete(removedHost);
     }
@@ -189,7 +189,7 @@ export class TopologyDescription {
     let { type: topologyType, setName, maxSetVersion, maxElectionId, commonWireVersion } = this;
 
     const serverType = serverDescription.type;
-    const serverDescriptions = new Map(this.servers);
+    const serverDescriptions = new StringMap(this.servers);
 
     // update common wire version
     if (serverDescription.maxWireVersion !== 0) {

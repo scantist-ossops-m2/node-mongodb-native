@@ -1,4 +1,5 @@
 import { EJSON } from 'bson';
+import * as process from 'process';
 import type { Writable } from 'stream';
 import { inspect } from 'util';
 

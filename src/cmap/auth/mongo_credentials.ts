@@ -1,3 +1,5 @@
+import * as process from 'process';
+
 // Resolves the default auth mechanism according to
 // Resolves the default auth mechanism according to
 import type { Document } from '../../bson';

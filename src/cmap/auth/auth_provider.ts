@@ -1,3 +1,5 @@
+import { type Buffer } from 'buffer';
+
 import type { Document } from '../../bson';
 import { MongoRuntimeError } from '../../error';
 import type { HandshakeDocument } from '../connect';

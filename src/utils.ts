@@ -1,6 +1,8 @@
+import { Buffer } from 'buffer';
 import * as crypto from 'crypto';
 import type { SrvRecord } from 'dns';
 import * as http from 'http';
+import * as process from 'process';
 import * as url from 'url';
 import { URL } from 'url';
 
@@ -1253,4 +1255,10 @@ export async function request(
     req.once('error', error => reject(error));
     req.end();
   });
+}
+
+export class StringMap extends Map<string, any> {
+  toJSON() {
+    return Object.fromEntries(this);
+  }
 }

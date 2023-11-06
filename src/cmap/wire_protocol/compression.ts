@@ -1,3 +1,4 @@
+import { type Buffer } from 'buffer';
 import { promisify } from 'util';
 import * as zlib from 'zlib';
 

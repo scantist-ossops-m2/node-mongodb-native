@@ -1,0 +1,19 @@
+{
+  "name": "cf_example",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler publish",
+    "start": "wrangler dev"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20231010.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4",
+    "wrangler": "0.0.0-d74c35fc"
+  },
+  "dependencies": {
+    "mongodb": "file:.."
+  }
+}

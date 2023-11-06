@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+import * as process from 'process';
 import { Writable } from 'stream';
 
 import type { Document } from '../bson';

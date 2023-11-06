@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import type { BSONSerializeOptions, Document, Long } from '../bson';
 import * as BSON from '../bson';
 import { MongoInvalidArgumentError, MongoRuntimeError } from '../error';

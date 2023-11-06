@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+import { type Buffer } from 'buffer';
+
 import { type Stream } from './cmap/connect';
 import { MongoMissingDependencyError } from './error';
 import type { Callback } from './utils';

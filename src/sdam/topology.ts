@@ -1,3 +1,4 @@
+import * as process from 'process';
 import { clearTimeout, setTimeout } from 'timers';
 import { promisify } from 'util';
 
@@ -43,7 +44,8 @@ import {
   List,
   makeStateMachine,
   ns,
-  shuffle
+  shuffle,
+  StringMap
 } from '../utils';
 import {
   _advanceClusterTime,
@@ -278,7 +280,7 @@ export class Topology extends TypedEventEmitter<TopologyEvents> {
         ? seedlist
         : shuffle(seedlist, options.srvMaxHosts);
 
-    const serverDescriptions = new Map();
+    const serverDescriptions = new StringMap();
     for (const hostAddress of selectedHosts) {
       serverDescriptions.set(hostAddress.toString(), new ServerDescription(hostAddress));
     }
@@ -307,7 +309,7 @@ export class Topology extends TypedEventEmitter<TopologyEvents> {
       heartbeatFrequencyMS: options.heartbeatFrequencyMS,
       minHeartbeatFrequencyMS: options.minHeartbeatFrequencyMS,
       // a map of server instances to normalized addresses
-      servers: new Map(),
+      servers: new StringMap(),
       credentials: options?.credentials,
       clusterTime: undefined,
 
@@ -415,7 +417,7 @@ export class Topology extends TypedEventEmitter<TopologyEvents> {
 
     // connect all known servers, then attempt server selection to connect
     const serverDescriptions = Array.from(this.s.description.servers.values());
-    this.s.servers = new Map(
+    this.s.servers = new StringMap(
       serverDescriptions.map(serverDescription => [
         serverDescription.address,
         createAndConnectServer(this, serverDescription)

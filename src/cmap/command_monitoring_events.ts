@@ -152,7 +152,14 @@ export class CommandFailedEvent {
     this.requestId = command.requestId;
     this.commandName = commandName;
     this.duration = calculateDurationInMs(started);
-    this.failure = maybeRedact(commandName, cmd, error) as Error;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    error.toJSON = function () {
+      return { name: this.name, message: this.message, stack: this.stack };
+    };
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    this.failure = error;
   }
 
   /* @internal */
