@@ -38,6 +38,7 @@ import {
 } from '../../mongodb';
 import { ejson } from '../utils';
 import { type CmapEvent, type CommandEvent, type EntitiesMap, type SdamEvent } from './entities';
+import { trace } from './runner';
 import {
   type ExpectedCmapEvent,
   type ExpectedCommandEvent,
@@ -597,9 +598,9 @@ function compareEvents(
       for (const property of Object.keys(expectedSdamEvent)) {
         expect(actualEvent[property]).to.equal(expectedSdamEvent[property]);
       }
-    } else if (expectedEvent.topologyClosingEvent) {
+    } else if (expectedEvent.topologyClosedEvent) {
       expect(actualEvent).to.be.instanceOf(TopologyClosedEvent);
-      const expectedSdamEvent = expectedEvent.topologyClosingEvent;
+      const expectedSdamEvent = expectedEvent.topologyClosedEvent;
       for (const property of Object.keys(expectedSdamEvent)) {
         expect(actualEvent[property]).to.equal(expectedSdamEvent[property]);
       }
@@ -607,7 +608,13 @@ function compareEvents(
       expect(actualEvent).to.be.instanceOf(TopologyDescriptionChangedEvent);
       const expectedSdamEvent = expectedEvent.topologyDescriptionChangedEvent;
       for (const property of Object.keys(expectedSdamEvent)) {
-        expect(actualEvent[property]).to.equal(expectedSdamEvent[property]);
+        if (typeof expectedSdamEvent[property] === 'object') {
+          for (const key of Object.keys(expectedSdamEvent[property])) {
+            expect(actualEvent[property][key]).to.equal(expectedSdamEvent[property][key]);
+          }
+        } else {
+          expect(actualEvent[property]).to.equal(expectedSdamEvent[property]);
+        }
       }
     } else {
       expect.fail(`Encountered unexpected event - ${inspect(actualEvent)}`);
