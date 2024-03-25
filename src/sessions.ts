@@ -559,11 +559,11 @@ async function attemptTransactionCommit<T>(
       !isMaxTimeMSExpiredError(err)
     ) {
       if (err.hasErrorLabel(MongoErrorLabel.UnknownTransactionCommitResult)) {
-        return attemptTransactionCommit(session, startTime, fn, result, options);
+        return await attemptTransactionCommit(session, startTime, fn, result, options);
       }
 
       if (err.hasErrorLabel(MongoErrorLabel.TransientTransactionError)) {
-        return attemptTransaction(session, startTime, fn, options);
+        return await attemptTransaction(session, startTime, fn, options);
       }
     }
 
@@ -660,6 +660,7 @@ async function endTransaction(
     if (txnState === TxnState.STARTING_TRANSACTION) {
       // the transaction was never started, we can safely exit here
       session.transaction.transition(TxnState.TRANSACTION_ABORTED);
+      return;
     }
 
     if (txnState === TxnState.TRANSACTION_ABORTED) {
