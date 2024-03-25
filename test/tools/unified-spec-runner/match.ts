@@ -38,6 +38,7 @@ import {
 } from '../../mongodb';
 import { ejson } from '../utils';
 import { type CmapEvent, type CommandEvent, type EntitiesMap, type SdamEvent } from './entities';
+import { trace } from './runner';
 import {
   type ExpectedCmapEvent,
   type ExpectedCommandEvent,
@@ -606,17 +607,22 @@ function compareEvents(
     } else if (expectedEvent.topologyDescriptionChangedEvent) {
       expect(actualEvent).to.be.instanceOf(TopologyDescriptionChangedEvent);
       const expectedSdamEvent = expectedEvent.topologyDescriptionChangedEvent;
-      for (const property of Object.keys(expectedSdamEvent)) {
+      // Only check the previousDescription and newDescription fields
+      for (const property of ['previousDescription', 'newDescription']) {
+        if (expectedSdamEvent[property] === undefined) continue;
         if (typeof expectedSdamEvent[property] === 'object') {
-          for (const key of Object.keys(expectedSdamEvent[property])) {
-            expect(actualEvent[property][key]).to.equal(expectedSdamEvent[property][key]);
-          }
+          expect(actualEvent[property]).to.have.property('type');
+          expect(actualEvent[property].type).to.equal(expectedSdamEvent[property].type);
         } else {
-          expect(actualEvent[property]).to.equal(expectedSdamEvent[property]);
+          expect.fail(
+            `Incorrect format of ${property} field.Expected an object with key 'type' with string value, got ${inspect(
+              expectedSdamEvent[property]
+            )} `
+          );
         }
       }
     } else {
-      expect.fail(`Encountered unexpected event - ${inspect(actualEvent)}`);
+      expect.fail(`Encountered unexpected event - ${inspect(actualEvent)} `);
     }
   }
 }
@@ -719,7 +725,7 @@ export function expectErrorCheck(
   expected: ExpectedError,
   entities: EntitiesMap
 ): void {
-  const expectMessage = `\n\nOriginal Error Stack:\n${error.stack}\n\n`;
+  const expectMessage = `\n\nOriginal Error Stack: \n${error.stack} \n\n`;
 
   if (!isMongoCryptError(error)) {
     expect(error, expectMessage).to.be.instanceOf(MongoError);
@@ -750,7 +756,7 @@ export function expectErrorCheck(
     for (const errorLabel of expected.errorLabelsContain) {
       expect(
         mongoError.hasErrorLabel(errorLabel),
-        `Error was supposed to have label ${errorLabel}, has [${mongoError.errorLabels}] -- ${expectMessage}`
+        `Error was supposed to have label ${errorLabel}, has[${mongoError.errorLabels}]--${expectMessage} `
       ).to.be.true;
     }
   }
@@ -760,7 +766,7 @@ export function expectErrorCheck(
     for (const errorLabel of expected.errorLabelsOmit) {
       expect(
         mongoError.hasErrorLabel(errorLabel),
-        `Error was not supposed to have label ${errorLabel}, has [${mongoError.errorLabels}] -- ${expectMessage}`
+        `Error was not supposed to have label ${errorLabel}, has[${mongoError.errorLabels}]--${expectMessage} `
       ).to.be.false;
     }
   }
