@@ -588,26 +588,15 @@ async function attemptTransaction<T>(
   options: TransactionOptions = {}
 ): Promise<any> {
   session.startTransaction(options);
-  async function maybeRetryOrThrow(err: MongoError): Promise<any> {
-    if (
-      err instanceof MongoError &&
-      err.hasErrorLabel(MongoErrorLabel.TransientTransactionError) &&
-      hasNotTimedOut(startTime, MAX_WITH_TRANSACTION_TIMEOUT)
-    ) {
-      const transactionResult = await attemptTransaction(session, startTime, fn, options);
-      return transactionResult;
-    }
 
-    if (isMaxTimeMSExpiredError(err)) {
-      err.addErrorLabel(MongoErrorLabel.UnknownTransactionCommitResult);
-    }
-
-    throw err;
+  let promise;
+  try {
+    promise = fn(session);
+  } catch (err) {
+    promise = Promise.reject(err);
   }
 
   try {
-    const promise = fn(session);
-
     if (!isPromiseLike(promise)) {
       await session.abortTransaction();
       return new MongoInvalidArgumentError(
@@ -626,7 +615,20 @@ async function attemptTransaction<T>(
       await session.abortTransaction();
     }
 
-    return await maybeRetryOrThrow(err);
+    if (
+      err instanceof MongoError &&
+      err.hasErrorLabel(MongoErrorLabel.TransientTransactionError) &&
+      hasNotTimedOut(startTime, MAX_WITH_TRANSACTION_TIMEOUT)
+    ) {
+      const transactionResult = await attemptTransaction(session, startTime, fn, options);
+      return transactionResult;
+    }
+
+    if (isMaxTimeMSExpiredError(err)) {
+      err.addErrorLabel(MongoErrorLabel.UnknownTransactionCommitResult);
+    }
+
+    throw err;
   }
 }
 
@@ -731,53 +733,46 @@ async function endTransaction(
     command.recoveryToken = session.transaction.recoveryToken;
   }
 
-  const handleFirstCommandAttempt = async (error?: Error) => {
-    if (command.abortTransaction) {
-      // always unpin on abort regardless of command outcome
-      session.unpin();
+  // send the command
+  const error = await executeOperation(
+    session.client,
+    new RunAdminCommandOperation(command, {
+      session,
+      readPreference: ReadPreference.primary,
+      bypassPinningCheck: true
+    })
+  ).catch(e => e);
+
+  if (command.abortTransaction) {
+    // always unpin on abort regardless of command outcome
+    session.unpin();
+  }
+
+  if (error instanceof MongoError && isRetryableWriteError(error)) {
+    // SPEC-1185: apply majority write concern when retrying commitTransaction
+    if (command.commitTransaction) {
+      // per txns spec, must unpin session in this case
+      session.unpin({ force: true });
+
+      command.writeConcern = Object.assign({ wtimeout: 10000 }, command.writeConcern, {
+        w: 'majority'
+      });
     }
 
-    if (error instanceof MongoError && isRetryableWriteError(error)) {
-      // SPEC-1185: apply majority write concern when retrying commitTransaction
-      if (command.commitTransaction) {
-        // per txns spec, must unpin session in this case
-        session.unpin({ force: true });
-
-        command.writeConcern = Object.assign({ wtimeout: 10000 }, command.writeConcern, {
-          w: 'majority'
-        });
-      }
-
-      try {
-        await executeOperation(
-          session.client,
-          new RunAdminCommandOperation(command, {
-            session,
-            readPreference: ReadPreference.primary,
-            bypassPinningCheck: true
-          })
-        );
-        commandHandler();
-      } catch (err) {
-        commandHandler(err);
-        throw err;
-      }
+    try {
+      await executeOperation(
+        session.client,
+        new RunAdminCommandOperation(command, {
+          session,
+          readPreference: ReadPreference.primary,
+          bypassPinningCheck: true
+        })
+      );
+      commandHandler();
+    } catch (err) {
+      commandHandler(err);
+      throw err;
     }
-  };
-
-  try {
-    // send the command
-    await executeOperation(
-      session.client,
-      new RunAdminCommandOperation(command, {
-        session,
-        readPreference: ReadPreference.primary,
-        bypassPinningCheck: true
-      })
-    );
-    await handleFirstCommandAttempt();
-  } catch (err) {
-    await handleFirstCommandAttempt(err);
   }
 }
 
