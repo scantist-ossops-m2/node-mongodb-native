@@ -25,21 +25,14 @@ describe('Find', function () {
     },
 
     test: async function () {
-      const configuration = this.configuration;
-      const client = configuration.newClient(configuration.writeConcernMax(), { maxPoolSize: 1 });
-      await client.connect();
-      this.defer(async () => {
-        await client.close();
-      });
-
-      const db = client.db(configuration.db);
+      const db = client.db('find');
       await db.dropCollection('test_find_simple').catch(() => null);
       const collection = db.collection('test_find_simple');
       const docs = [{ a: 2 }, { b: 3 }];
 
-      await collection.insert(docs, configuration.writeConcernMax());
+      await collection.insertMany(docs, { writeConcern: { w: 'majority' } });
 
-      const insertedDocs = await collection.find().toArray();
+      const insertedDocs = await collection.find({}, { batchSize: 1 }).toArray();
       expect(insertedDocs).to.have.length(2);
 
       const docCount = await collection.count();

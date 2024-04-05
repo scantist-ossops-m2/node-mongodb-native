@@ -7,6 +7,7 @@ import {
   type ConnectionPoolOptions
 } from '../cmap/connection_pool';
 import { PoolClearedError } from '../cmap/errors';
+import { type MongoDBResponseConstructor } from '../cmap/wire_protocol/responses';
 import {
   APM_EVENTS,
   CLOSED,
@@ -266,7 +267,25 @@ export class Server extends TypedEventEmitter<ServerEvents> {
    * Execute a command
    * @internal
    */
-  async command(ns: MongoDBNamespace, cmd: Document, options: CommandOptions): Promise<Document> {
+  public async command<T extends MongoDBResponseConstructor>(
+    ns: MongoDBNamespace,
+    command: Document,
+    options: CommandOptions | undefined,
+    responseType: T | undefined
+  ): Promise<typeof responseType extends undefined ? Document : InstanceType<T>>;
+
+  public async command(
+    ns: MongoDBNamespace,
+    command: Document,
+    options?: CommandOptions
+  ): Promise<Document>;
+
+  public async command(
+    ns: MongoDBNamespace,
+    cmd: Document,
+    options: CommandOptions,
+    responseType?: MongoDBResponseConstructor
+  ): Promise<Document> {
     if (ns.db == null || typeof ns === 'string') {
       throw new MongoInvalidArgumentError('Namespace must not be a string');
     }
@@ -308,7 +327,7 @@ export class Server extends TypedEventEmitter<ServerEvents> {
 
     try {
       try {
-        return await conn.command(ns, cmd, finalOptions);
+        return await conn.command(ns, cmd, finalOptions, responseType);
       } catch (commandError) {
         throw this.decorateCommandError(conn, cmd, finalOptions, commandError);
       }
@@ -319,7 +338,7 @@ export class Server extends TypedEventEmitter<ServerEvents> {
       ) {
         await this.pool.reauthenticate(conn);
         try {
-          return await conn.command(ns, cmd, finalOptions);
+          return await conn.command(ns, cmd, finalOptions, responseType);
         } catch (commandError) {
           throw this.decorateCommandError(conn, cmd, finalOptions, commandError);
         }

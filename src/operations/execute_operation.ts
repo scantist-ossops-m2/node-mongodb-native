@@ -1,4 +1,4 @@
-import type { Document } from '../bson';
+import { type CursorResponse } from '../cmap/wire_protocol/responses';
 import {
   isRetryableReadError,
   isRetryableWriteError,
@@ -44,7 +44,7 @@ export interface ExecutionResult {
   /** The session used for this operation, may be implicitly created */
   session?: ClientSession;
   /** The raw server response for the operation */
-  response: Document;
+  response: CursorResponse;
 }
 
 /**

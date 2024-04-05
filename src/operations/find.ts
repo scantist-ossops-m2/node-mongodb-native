@@ -1,4 +1,5 @@
 import type { Document } from '../bson';
+import { CursorResponse } from '../cmap/wire_protocol/responses';
 import type { Collection } from '../collection';
 import { MongoInvalidArgumentError } from '../error';
 import { ReadConcern } from '../read_concern';
@@ -101,22 +102,25 @@ export class FindOperation extends CommandOperation<Document> {
     return 'find' as const;
   }
 
-  override async execute(server: Server, session: ClientSession | undefined): Promise<Document> {
+  override async execute(
+    server: Server,
+    session: ClientSession | undefined
+  ): Promise<CursorResponse> {
     this.server = server;
 
-    const options = this.options;
+    const options = {
+      ...this.options,
+      ...this.bsonOptions,
+      documentsReturnedIn: 'firstBatch',
+      session
+    };
 
     let findCommand = makeFindCommand(this.ns, this.filter, options);
     if (this.explain) {
       findCommand = decorateWithExplain(findCommand, this.explain);
     }
 
-    return await server.command(this.ns, findCommand, {
-      ...this.options,
-      ...this.bsonOptions,
-      documentsReturnedIn: 'firstBatch',
-      session
-    });
+    return await server.command(this.ns, findCommand, options, CursorResponse);
   }
 }
 

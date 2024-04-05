@@ -1,4 +1,5 @@
-import { type Document, Long } from '../bson';
+import { type Document } from '../bson';
+import { CursorResponse } from '../cmap/wire_protocol/responses';
 import { MongoInvalidArgumentError, MongoTailableCursorError } from '../error';
 import { type ExplainVerbosityLike } from '../explain';
 import type { MongoClient } from '../mongo_client';
@@ -78,14 +79,14 @@ export class FindCursor<TSchema = any> extends AbstractCursor<TSchema> {
     const response = await executeOperation(this.client, findOperation);
 
     // the response is not a cursor when `explain` is enabled
-    this[kNumReturned] = response.cursor?.firstBatch?.length;
+    this[kNumReturned] = response.batchLength;
 
     // TODO: NODE-2882
     return { server: findOperation.server, session, response };
   }
 
   /** @internal */
-  override async getMore(batchSize: number): Promise<Document | null> {
+  override async getMore(batchSize: number): Promise<CursorResponse> {
     const numReturned = this[kNumReturned];
     if (numReturned) {
       // TODO(DRIVERS-1448): Remove logic to enforce `limit` in the driver
@@ -107,14 +108,14 @@ export class FindCursor<TSchema = any> extends AbstractCursor<TSchema> {
           // instead, if we determine there are no more documents to request from the server, we preemptively
           // close the cursor
         }
-        return { cursor: { id: Long.ZERO, nextBatch: [] } };
+        return CursorResponse.empty;
       }
     }
 
     const response = await super.getMore(batchSize);
     // TODO: wrap this in some logic to prevent it from happening if we don't need this support
     if (response) {
-      this[kNumReturned] = this[kNumReturned] + response.cursor.nextBatch.length;
+      this[kNumReturned] = (this[kNumReturned] ?? 0) + response.batchLength;
     }
 
     return response;
